@@ -1,7 +1,6 @@
-!pip install selenium webdriver_manager beautifulsoup4
 import time
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -58,7 +57,10 @@ def open_webpage_with_selenium(url):
         random_sleep()
         
         # Thu thập dữ liệu CV
-        today_date = datetime.now().strftime("%d/%m/%Y")
+        target_date = (datetime.now() - timedelta(days=1)).strftime("%d/%m/%Y")
+        stop_date = (datetime.now() - timedelta(days=2)).strftime("%d/%m/%Y")
+        print(f"Ngày cần tìm: {target_date}")
+        print(f"Ngày dừng: {stop_date}")
         all_data = []
         ktra = True
         while ktra:
@@ -70,29 +72,34 @@ def open_webpage_with_selenium(url):
             for row in rows:
                 # Lấy thông tin CV
                 application_date = row.select_one(".fa-clock").next_sibling.strip()
-                if today_date not in application_date:
-                    print("Đã hết cv")
+                print(f"Ngày ứng tuyển: {application_date}")
+                
+                # Kiểm tra ngày ứng tuyển
+                if stop_date in application_date:
+                    print("Đã dừng thu thập vì gặp ngày dừng.")
                     ktra = False
                     break
-                fullname = row.select_one(".fullname a").text.strip()
-                email = row.select_one(".fa-envelope").next_sibling.strip()
-                phone = row.select_one(".fa-circle-phone").next_sibling.strip()
-                job_title = row.select_one(".text-gray.text-truncate").text.strip()
-                cv_status = row.select_one(".cv-status").text.strip()
+                
+                if target_date in application_date:
+                    fullname = row.select_one(".fullname a").text.strip()
+                    email = row.select_one(".fa-envelope").next_sibling.strip()
+                    phone = row.select_one(".fa-circle-phone").next_sibling.strip()
+                    job_title = row.select_one(".text-gray.text-truncate").text.strip()
+                    cv_status = row.select_one(".cv-status").text.strip()
 
-                download_link_tag = row.select_one('a[href*="/download-cv"]')
-                download_link = download_link_tag['href'] if download_link_tag else "N/A"
+                    download_link_tag = row.select_one('a[href*="/download-cv"]')
+                    download_link = download_link_tag['href'] if download_link_tag else "N/A"
 
-                data = {
-                    "Họ và Tên": fullname,
-                    "Email": email,
-                    "Số Điện Thoại": phone,
-                    "Vị Trí Ứng Tuyển": job_title,
-                    "Ngày Ứng Tuyển": application_date,
-                    "Trạng Thái CV": cv_status,
-                    "Link Download CV": download_link
-                }
-                all_data.append(data)
+                    data = {
+                        "Họ và Tên": fullname,
+                        "Email": email,
+                        "Số Điện Thoại": phone,
+                        "Vị Trí Ứng Tuyển": job_title,
+                        "Ngày Ứng Tuyển": application_date,
+                        "Trạng Thái CV": cv_status,
+                        "Link Download CV": download_link
+                    }
+                    all_data.append(data)
 
             # Chuyển sang trang tiếp theo
             next_button = driver.find_element(By.CSS_SELECTOR, 'a[href="#next"] i.fa-angle-right')
@@ -186,8 +193,6 @@ def fill_google_form(data):
 if __name__ == "__main__":
     website = "https://tuyendung.topcv.vn/app/login"
     results = open_webpage_with_selenium(website)
-    print("Dữ liệu thu thập được:")
-    for result in results:
-        print(result)
-        fill_google_form(result)
-
+for result in results:
+    print(result)
+    fill_google_form(result)
