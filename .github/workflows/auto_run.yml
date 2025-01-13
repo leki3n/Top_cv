@@ -20,6 +20,13 @@ jobs:
       with:
         python-version: 3.9
 
+    - name: List files in working directory
+      run: |
+        echo "Current directory:"
+        pwd
+        echo "Files in the directory:"
+        ls -la
+
     - name: Install dependencies
       run: |
         pip install selenium webdriver-manager beautifulsoup4
