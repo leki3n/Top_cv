@@ -1,0 +1,32 @@
+name: Auto Run Form Filler
+
+on:
+  schedule:
+    # Chạy vào 12h trưa hàng ngày (UTC+7)
+    - cron: "0 5 * * *"
+
+  workflow_dispatch:
+
+jobs:
+  run_script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+
+    - name: Install dependencies
+      run: |
+        pip install selenium webdriver-manager beautifulsoup4
+
+    - name: Run script
+      env:
+        EMAIL: ${{ secrets.EMAIL }}
+        PASSWORD: ${{ secrets.PASSWORD }}
+      run: |
+        python main.py
